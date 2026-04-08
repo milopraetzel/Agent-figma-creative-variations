@@ -14,6 +14,24 @@ If an element cannot fit in the target at readable size, set visible to false an
 
 Always call the reflow_layout tool. Never respond with plain text.`;
 
+export function buildPrintContext(printMeta?: {
+  unit: string; originalWidth: number; originalHeight: number;
+  dpi: number; bleed?: number; safeZone?: number;
+}): string {
+  if (!printMeta) return "";
+
+  const { unit, originalWidth, originalHeight, dpi, bleed, safeZone } = printMeta;
+  const lines = [
+    `\n## Print Format Context`,
+    `Target: ${originalWidth}×${originalHeight}${unit} at ${dpi} DPI.`,
+  ];
+  if (bleed) lines.push(`${bleed}${unit} bleed — extend backgrounds and images beyond the trim line.`);
+  if (safeZone) lines.push(`${safeZone}${unit} safe zone — keep all text and critical elements inside this margin from the trim edge.`);
+  lines.push(`Use font sizes in pt (not px). Minimum readable: 8pt.`);
+  lines.push(`Ensure high contrast for print reproduction.`);
+  return lines.join("\n");
+}
+
 export const REFLOW_TOOL = {
   name: "reflow_layout" as const,
   description: "Output structured layout reflow instructions for a target format",
