@@ -81,3 +81,30 @@ describe("POST /api/reflow", () => {
     expect(res.body.error).toBe("API error");
   });
 });
+
+describe("POST /api/reflow with printMeta", () => {
+  beforeEach(() => { mockGenerateReflow.mockReset(); });
+
+  it("passes printMeta to generateReflow", async () => {
+    mockGenerateReflow.mockResolvedValue({
+      targetWidth: 2480, targetHeight: 3508,
+      elements: [{ id: "text-1", x: 100, y: 200, width: 2280, height: 200, rotation: 0, visible: true, fontSize: 72 }],
+    });
+
+    const request = {
+      frame: sampleRequest.frame,
+      targetWidth: 2480,
+      targetHeight: 3508,
+      copyVariations: {},
+      printMeta: { unit: "mm", originalWidth: 210, originalHeight: 297, dpi: 300, bleed: 3, safeZone: 5 },
+    };
+
+    const app = createApp();
+    const res = await postJSON(app, "/api/reflow", request);
+
+    expect(res.status).toBe(200);
+    expect(mockGenerateReflow).toHaveBeenCalledWith(
+      expect.anything(), 2480, 3508, undefined, request.printMeta,
+    );
+  });
+});

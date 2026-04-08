@@ -107,8 +107,17 @@ export type PluginMessage =
   | { type: "ERROR"; message: string };
 
 export type UIMessage =
-  | { type: "GENERATE"; targetWidth: number; targetHeight: number; targetName: string; copyVariations: Record<string, string[]> }
+  | { type: "GENERATE"; formats: Array<{ id: string; name: string; widthPx: number; heightPx: number; printMeta?: PrintMeta }>; copyVariations: Record<string, string[]> }
   | { type: "CANCEL" };
+
+export interface PrintMeta {
+  unit: "mm" | "in";
+  originalWidth: number;
+  originalHeight: number;
+  dpi: number;
+  bleed?: number;
+  safeZone?: number;
+}
 
 // ---- API Request/Response ----
 
@@ -117,6 +126,7 @@ export interface ReflowRequest {
   targetWidth: number;
   targetHeight: number;
   copyVariations: Record<string, string[]>;
+  printMeta?: PrintMeta;
 }
 
 export interface ReflowResponse {

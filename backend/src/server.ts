@@ -22,7 +22,7 @@ export function createApp(): express.Application {
       const variationEntries = Object.entries(copyVariations ?? {});
 
       if (variationEntries.length === 0) {
-        const reflow = await generateReflow(frame, targetWidth, targetHeight);
+        const reflow = await generateReflow(frame, targetWidth, targetHeight, undefined, body.printMeta);
         const response: ReflowResponse = {
           variations: [{ label: "Original", textOverrides: {}, reflow }],
         };
@@ -31,7 +31,7 @@ export function createApp(): express.Application {
       }
 
       const permutations = generatePermutations(variationEntries);
-      const reflow = await generateReflow(frame, targetWidth, targetHeight);
+      const reflow = await generateReflow(frame, targetWidth, targetHeight, undefined, body.printMeta);
 
       const response: ReflowResponse = {
         variations: permutations.map((perm) => ({
