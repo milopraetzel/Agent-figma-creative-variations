@@ -13,10 +13,7 @@ figma.on("selectionchange", () => {
     const msg: PluginMessage = {
       type: "SELECTION_CHANGED",
       frame: {
-        id: sel.id,
-        name: sel.name,
-        width: sel.width,
-        height: sel.height,
+        id: sel.id, name: sel.name, width: sel.width, height: sel.height,
         textLayerCount: textLayers.length,
       },
     };
@@ -35,54 +32,43 @@ figma.ui.on("message", async (msg: UIMessage) => {
         return;
       }
 
-      figma.ui.postMessage({
-        type: "GENERATION_PROGRESS",
-        format: msg.targetName,
-        step: "Serializing frame...",
-      } as PluginMessage);
-
       const frame = serializeFrame(sel);
+      const totalFormats = msg.formats.length;
 
-      figma.ui.postMessage({
-        type: "GENERATION_PROGRESS",
-        format: msg.targetName,
-        step: "Sending to reflow engine...",
-      } as PluginMessage);
+      for (let i = 0; i < msg.formats.length; i++) {
+        const fmt = msg.formats[i];
 
-      const request: ReflowRequest = {
-        frame,
-        targetWidth: msg.targetWidth,
-        targetHeight: msg.targetHeight,
-        copyVariations: msg.copyVariations,
-      };
+        figma.ui.postMessage({
+          type: "GENERATION_PROGRESS",
+          format: fmt.name,
+          step: `Reflowing (${i + 1}/${totalFormats})...`,
+        } as PluginMessage);
 
-      const response = await fetch(`${BACKEND_URL}/api/reflow`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
+        const request: ReflowRequest = {
+          frame,
+          targetWidth: fmt.widthPx,
+          targetHeight: fmt.heightPx,
+          copyVariations: msg.copyVariations,
+          printMeta: fmt.printMeta,
+        };
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error ?? `Backend returned ${response.status}`);
+        const response = await fetch(`${BACKEND_URL}/api/reflow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error ?? `Backend returned ${response.status}`);
+        }
+
+        const data: ReflowResponse = await response.json();
+        await applyReflow(sel.id, fmt.name, data.variations);
       }
 
-      const data: ReflowResponse = await response.json();
-
-      figma.ui.postMessage({
-        type: "GENERATION_PROGRESS",
-        format: msg.targetName,
-        step: "Applying reflow...",
-      } as PluginMessage);
-
-      await applyReflow(sel.id, msg.targetName, data.variations);
-
-      figma.ui.postMessage({
-        type: "GENERATION_COMPLETE",
-        pageId: "done",
-      } as PluginMessage);
-
-      figma.notify(`✓ Generated ${data.variations.length} variations for ${msg.targetName}`);
+      figma.ui.postMessage({ type: "GENERATION_COMPLETE", pageId: "done" } as PluginMessage);
+      figma.notify(`✓ Generated variations for ${totalFormats} format${totalFormats > 1 ? "s" : ""}`);
     } catch (err: any) {
       figma.ui.postMessage({ type: "ERROR", message: err.message } as PluginMessage);
       figma.notify(`✗ Error: ${err.message}`, { error: true });
