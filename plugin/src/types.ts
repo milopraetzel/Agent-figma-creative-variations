@@ -126,3 +126,25 @@ export interface ReflowResponse {
     reflow: ReflowInstructions;
   }>;
 }
+
+// ---- Template System ----
+
+export interface FormatTemplate {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  category: "Digital" | "Print";
+  subcategory: string;
+  unit: "px" | "mm" | "in";
+  dpi: number;
+  bleed?: number;
+  safeZone?: number;
+  notes?: string;
+}
+
+export interface TemplateSet {
+  id: string;
+  name: string;
+  formatIds: string[];
+}
