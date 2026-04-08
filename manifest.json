@@ -1,0 +1,12 @@
+{
+  "name": "Creative Variations",
+  "id": "creative-variations-plugin",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["http://localhost:3001"]
+  }
+}

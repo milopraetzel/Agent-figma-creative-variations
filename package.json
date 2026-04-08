@@ -1,0 +1,25 @@
+{
+  "name": "agent-figma-creative-variations",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:plugin": "esbuild plugin/src/code.ts --bundle --outfile=dist/code.js --target=es2020 && esbuild plugin/src/ui.tsx --bundle --outfile=ui.html --loader:.tsx=tsx --inject:./plugin/src/preact-shim.ts",
+    "build:backend": "esbuild backend/src/server.ts --bundle --outfile=backend/dist/server.js --platform=node --target=node18",
+    "build": "npm run build:plugin && npm run build:backend",
+    "dev:backend": "npx tsx backend/src/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@figma/plugin-typings": "^1.104.0",
+    "esbuild": "^0.24.0",
+    "express": "^4.21.0",
+    "preact": "^10.25.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0",
+    "@types/express": "^5.0.0",
+    "cors": "^2.8.5",
+    "@types/cors": "^2.8.17"
+  }
+}
