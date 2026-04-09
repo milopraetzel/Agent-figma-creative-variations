@@ -3,6 +3,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { setMemoryRoot, writeMemoryFile } from "../src/memory";
 import { mergeContext } from "../src/context-merger";
+import { saveBrandPreset } from "../src/brands";
+import type { BrandPreset } from "../../plugin/src/types";
 
 const TEST_DIR = path.join(__dirname, "__test_context__");
 
@@ -76,5 +78,28 @@ describe("context merger", () => {
     expect(ctx).toContain("Brand content.");
     expect(ctx).not.toContain("## Template Context");
     expect(ctx).not.toContain("## Project Context");
+  });
+});
+
+describe("context merger with brand preset", () => {
+  beforeEach(() => {
+    fs.mkdirSync(path.join(TEST_DIR, "brands", "acme"), { recursive: true });
+    fs.mkdirSync(path.join(TEST_DIR, "templates"), { recursive: true });
+    fs.mkdirSync(path.join(TEST_DIR, "projects"), { recursive: true });
+    setMemoryRoot(TEST_DIR);
+  });
+  afterEach(() => { fs.rmSync(TEST_DIR, { recursive: true, force: true }); });
+
+  it("includes brand preset in context when available", () => {
+    const preset: BrandPreset = {
+      name: "Acme", colors: { primary: "#6B4EFF" },
+      fonts: { headline: { family: "Inter", weight: 700 }, body: { family: "Inter", weight: 400 } },
+    };
+    saveBrandPreset("acme", preset);
+    writeMemoryFile("brands", "acme", "brand.md", "Voice: confident.");
+    const ctx = mergeContext({ brandName: "acme" });
+    expect(ctx).toContain("Voice: confident.");
+    expect(ctx).toContain("Brand Preset: Acme");
+    expect(ctx).toContain("#6B4EFF");
   });
 });

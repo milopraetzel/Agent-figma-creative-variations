@@ -1,4 +1,5 @@
 import { readMemoryFile, listMemoryFiles } from "./memory";
+import { loadBrandPreset, brandPresetToContext } from "./brands";
 
 export interface ContextQuery {
   brandName?: string;
@@ -10,9 +11,13 @@ export function mergeContext(query: ContextQuery): string {
   const sections: string[] = [];
 
   if (query.brandName) {
-    const brandContent = readBrandContent(query.brandName);
-    if (brandContent) {
-      sections.push(`## Brand Context\n\n${brandContent}`);
+    const brandParts: string[] = [];
+    const mdContent = readBrandContent(query.brandName);
+    if (mdContent) brandParts.push(mdContent);
+    const preset = loadBrandPreset(query.brandName);
+    if (preset) brandParts.push(brandPresetToContext(preset));
+    if (brandParts.length > 0) {
+      sections.push(`## Brand Context\n\n${brandParts.join("\n\n")}`);
     }
   }
 
