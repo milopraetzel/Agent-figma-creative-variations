@@ -1,0 +1,23 @@
+{
+  "name": "Example Brand",
+  "colors": {
+    "primary": "#6B4EFF",
+    "secondary": "#1E1E1E",
+    "accent": "#F59E0B",
+    "background": "#111111"
+  },
+  "fonts": {
+    "headline": { "family": "Inter", "weight": 700, "transform": "uppercase" },
+    "body": { "family": "Inter", "weight": 400 }
+  },
+  "logo": {
+    "position": "bottom-right",
+    "clearance": 8,
+    "minSize": 40
+  },
+  "constraints": {
+    "minFontSize": 14,
+    "minFontSizePrint": 9,
+    "maxHeadlineWords": 6
+  }
+}

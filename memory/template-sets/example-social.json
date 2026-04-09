@@ -1,0 +1,11 @@
+{
+  "id": "example-social",
+  "name": "Social Media Essentials",
+  "formatIds": [
+    "instagram-post",
+    "instagram-story",
+    "facebook-ad",
+    "linkedin-post",
+    "x-post"
+  ]
+}
