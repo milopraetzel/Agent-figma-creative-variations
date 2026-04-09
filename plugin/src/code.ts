@@ -44,12 +44,17 @@ figma.ui.on("message", async (msg: UIMessage) => {
           step: `Reflowing (${i + 1}/${totalFormats})...`,
         } as PluginMessage);
 
+        const memoryCtx = msg.memoryContext
+          ? { ...msg.memoryContext, templateId: fmt.id }
+          : undefined;
+
         const request: ReflowRequest = {
           frame,
           targetWidth: fmt.widthPx,
           targetHeight: fmt.heightPx,
           copyVariations: msg.copyVariations,
           printMeta: fmt.printMeta,
+          memoryContext: memoryCtx,
         };
 
         const response = await fetch(`${BACKEND_URL}/api/reflow`, {

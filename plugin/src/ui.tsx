@@ -1,6 +1,6 @@
 import { render } from "preact";
 import { useState, useEffect, useMemo } from "preact/hooks";
-import type { PluginMessage, UIMessage, FormatTemplate, PrintMeta } from "./types";
+import type { PluginMessage, UIMessage, FormatTemplate, PrintMeta, MemoryContext } from "./types";
 import {
   ALL_TEMPLATES, getCategories, getSubcategories, getTemplatesBySubcategory, toPx,
 } from "../../shared/templates";
@@ -17,6 +17,10 @@ function App() {
   const [copyText, setCopyText] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [projects, setProjects] = useState<string[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState<string>("");
+  const [selectedProject, setSelectedProject] = useState<string>("");
 
   const categories = useMemo(() => getCategories(), []);
   const subcategories = useMemo(() => getSubcategories(selectedCategory), [selectedCategory]);
@@ -30,6 +34,17 @@ function App() {
       setSelectedSubcategory(subcategories[0]);
     }
   }, [subcategories, selectedSubcategory]);
+
+  useEffect(() => {
+    fetch("http://localhost:3001/api/memory/brands")
+      .then((r) => r.json())
+      .then((d) => setBrands(d.files ?? []))
+      .catch(() => {});
+    fetch("http://localhost:3001/api/memory/projects")
+      .then((r) => r.json())
+      .then((d) => setProjects(d.files?.filter((f: string) => f.endsWith(".md")).map((f: string) => f.replace(".md", "")) ?? []))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     window.onmessage = (event: MessageEvent) => {
@@ -71,7 +86,16 @@ function App() {
         return { id: t.id, name: t.name, widthPx, heightPx, printMeta };
       });
 
-    const msg: UIMessage = { type: "GENERATE", formats, copyVariations };
+    const memoryContext: any = {};
+    if (selectedBrand) memoryContext.brandName = selectedBrand;
+    if (selectedProject) memoryContext.projectName = selectedProject;
+
+    const msg: UIMessage = {
+      type: "GENERATE",
+      formats,
+      copyVariations,
+      memoryContext: Object.keys(memoryContext).length > 0 ? memoryContext : undefined,
+    };
     parent.postMessage({ pluginMessage: msg }, "*");
   }
 
@@ -146,6 +170,30 @@ function App() {
           placeholder={"Think Different. Build Better.\nYour Vision, Our Platform.\nDesign Without Limits."} rows={4} />
       </div>
 
+      {(brands.length > 0 || projects.length > 0) && (
+        <div style={styles.section}>
+          <div style={styles.label}>MEMORY CONTEXT</div>
+          {brands.length > 0 && (
+            <div style={{ marginBottom: "8px" }}>
+              <select style={styles.select} value={selectedBrand}
+                onChange={(e) => setSelectedBrand((e.target as HTMLSelectElement).value)}>
+                <option value="">No brand</option>
+                {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+          )}
+          {projects.length > 0 && (
+            <div>
+              <select style={styles.select} value={selectedProject}
+                onChange={(e) => setSelectedProject((e.target as HTMLSelectElement).value)}>
+                <option value="">No project</option>
+                {projects.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+      )}
+
       <button style={{ ...styles.generateButton, ...((!frame || selectedIds.size === 0 || generating) ? styles.generateButtonDisabled : {}) }}
         onClick={handleGenerate} disabled={!frame || selectedIds.size === 0 || generating}>
         {generating ? "Generating..." : `Generate ${selectedCount} format${selectedCount !== 1 ? "s" : ""}`}
@@ -183,6 +231,11 @@ const styles: Record<string, any> = {
   bleedBadge: { fontSize: "9px", color: "#f59e0b", background: "rgba(245,158,11,0.15)", padding: "1px 4px", borderRadius: "3px" },
   formatSize: { fontSize: "11px", color: "#666" },
   textarea: { width: "100%", background: "#2a2a2a", border: "1px solid #444", borderRadius: "4px", padding: "8px", color: "#e0e0e0", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" },
+  select: {
+    width: "100%", background: "#2a2a2a", border: "1px solid #444",
+    borderRadius: "4px", padding: "6px 8px", color: "#e0e0e0",
+    fontSize: "12px", fontFamily: "inherit",
+  },
   generateButton: { margin: "12px 16px", padding: "10px", background: "#a78bfa", color: "#1e1e1e", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "14px", cursor: "pointer", textAlign: "center" },
   generateButtonDisabled: { opacity: 0.5, cursor: "not-allowed" },
   status: { padding: "8px 16px", fontSize: "12px", color: "#888", textAlign: "center" },
