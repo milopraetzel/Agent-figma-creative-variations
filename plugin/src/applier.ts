@@ -27,16 +27,33 @@ export async function applyReflow(
       idMap.set(sourceNodes[i].id, allNodes[i]);
     }
 
-    for (const elReflow of variation.reflow.elements) {
-      const node = idMap.get(elReflow.id);
+    // Detach all instances so properties can be overridden
+    var instances = clone.findAll(function(n) { return n.type === "INSTANCE"; });
+    for (var idx = instances.length - 1; idx >= 0; idx--) {
+      try { (instances[idx] as InstanceNode).detachInstance(); } catch (e) {}
+    }
+
+    // Re-query nodes after detaching
+    var freshNodes = clone.findAll(function() { return true; });
+    var freshSourceNodes = (sourceFrame as FrameNode).findAll(function() { return true; });
+    var freshIdMap = new Map();
+    for (var idx2 = 0; idx2 < freshSourceNodes.length && idx2 < freshNodes.length; idx2++) {
+      freshIdMap.set(freshSourceNodes[idx2].id, freshNodes[idx2]);
+    }
+
+    for (var j = 0; j < variation.reflow.elements.length; j++) {
+      var elReflow = variation.reflow.elements[j];
+      var node = freshIdMap.get(elReflow.id);
       if (!node) continue;
 
-      node.x = elReflow.x;
-      node.y = elReflow.y;
-      if ("resize" in node) {
-        (node as any).resize(elReflow.width, elReflow.height);
-      }
-      node.rotation = elReflow.rotation;
+      try {
+        node.x = elReflow.x;
+        node.y = elReflow.y;
+        if ("resize" in node) {
+          (node as any).resize(elReflow.width, elReflow.height);
+        }
+        node.rotation = elReflow.rotation;
+      } catch (e) {}
       node.visible = elReflow.visible;
 
       if (node.type === "TEXT") {
