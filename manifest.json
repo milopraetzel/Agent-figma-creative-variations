@@ -7,6 +7,8 @@
   "editorType": ["figma"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["http://localhost:3001"]
+    "allowedDomains": ["none"],
+    "devAllowedDomains": ["http://localhost:3001"],
+    "reasoning": "Connects to backend API for AI-powered layout reflow during development"
   }
 }

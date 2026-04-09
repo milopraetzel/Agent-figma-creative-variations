@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:plugin": "mkdir -p dist && esbuild plugin/src/code.ts --bundle --outfile=dist/code.js --target=es2020 && node scripts/build-ui.mjs",
+    "build:plugin": "mkdir -p dist && esbuild plugin/src/code.ts --bundle --outfile=dist/code.js --target=es6 && node scripts/build-ui.mjs",
     "build:backend": "esbuild backend/src/server.ts --bundle --outfile=backend/dist/server.js --platform=node --target=node18",
     "build": "npm run build:plugin && npm run build:backend",
     "dev:backend": "npx tsx backend/src/server.ts",

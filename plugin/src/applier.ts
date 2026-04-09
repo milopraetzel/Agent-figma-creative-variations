@@ -5,7 +5,7 @@ export async function applyReflow(
   formatName: string,
   variations: ReflowResponse["variations"],
 ): Promise<void> {
-  const sourceFrame = figma.getNodeById(sourceFrameId) as FrameNode;
+  const sourceFrame = await figma.getNodeByIdAsync(sourceFrameId) as FrameNode;
   if (!sourceFrame) throw new Error(`Source frame ${sourceFrameId} not found`);
 
   const page = figma.createPage();
