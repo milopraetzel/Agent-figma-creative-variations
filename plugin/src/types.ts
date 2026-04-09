@@ -165,3 +165,36 @@ export interface TemplateSet {
   name: string;
   formatIds: string[];
 }
+
+// ---- Brand Presets ----
+
+export interface BrandPreset {
+  name: string;
+  colors: {
+    primary: string;
+    secondary?: string;
+    accent?: string;
+    background?: string;
+  };
+  fonts: {
+    headline: { family: string; weight: number; transform?: string };
+    body: { family: string; weight: number };
+  };
+  logo?: {
+    position: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
+    clearance: number;
+    minSize: number;
+  };
+  constraints?: {
+    minFontSize?: number;
+    minFontSizePrint?: number;
+    maxHeadlineWords?: number;
+    safeZoneOverrides?: Record<string, string>;
+  };
+}
+
+export interface TemplateSetDef {
+  id: string;
+  name: string;
+  formatIds: string[];
+}
