@@ -21,6 +21,7 @@ function App() {
   const [projects, setProjects] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [templateSets, setTemplateSets] = useState<Array<{ id: string; name: string; formatIds: string[] }>>([]);
 
   const categories = useMemo(() => getCategories(), []);
   const subcategories = useMemo(() => getSubcategories(selectedCategory), [selectedCategory]);
@@ -43,6 +44,10 @@ function App() {
     fetch("http://localhost:3001/api/memory/projects")
       .then((r) => r.json())
       .then((d) => setProjects(d.files?.filter((f: string) => f.endsWith(".md")).map((f: string) => f.replace(".md", "")) ?? []))
+      .catch(() => {});
+    fetch("http://localhost:3001/api/template-sets")
+      .then((r) => r.json())
+      .then((d) => setTemplateSets(d.sets ?? []))
       .catch(() => {});
   }, []);
 
@@ -160,6 +165,31 @@ function App() {
               </div>
             );
           })}
+        </div>
+        {/* Template set buttons */}
+        <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
+          {templateSets.map((ts) => (
+            <div key={ts.id} style={styles.subcategoryPill}
+              onClick={() => setSelectedIds(new Set(ts.formatIds))}>
+              {ts.name}
+            </div>
+          ))}
+          {selectedIds.size > 0 && (
+            <div style={{ ...styles.subcategoryPill, color: "#10b981", borderColor: "#10b981" }}
+              onClick={() => {
+                const name = prompt("Template set name:");
+                if (!name) return;
+                const id = name.toLowerCase().replace(/\s+/g, "-");
+                const set = { id, name, formatIds: [...selectedIds] };
+                fetch("http://localhost:3001/api/template-sets/" + id, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ set }),
+                }).then(() => setTemplateSets((prev) => [...prev, set]));
+              }}>
+              + Save set
+            </div>
+          )}
         </div>
       </div>
 
