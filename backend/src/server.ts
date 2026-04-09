@@ -3,6 +3,8 @@ import cors from "cors";
 import { generateReflow } from "./reflow";
 import { mergeContext } from "./context-merger";
 import { listMemoryFiles, readMemoryFile, writeMemoryFile, deleteMemoryFile } from "./memory";
+import { saveBrandPreset, loadBrandPreset, listBrands } from "./brands";
+import { saveTemplateSet, loadTemplateSet, listTemplateSets, deleteTemplateSet } from "./template-sets";
 import type { ReflowRequest, ReflowResponse } from "./types";
 
 export function createApp(): express.Application {
@@ -127,6 +129,53 @@ export function createApp(): express.Application {
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
+  });
+
+  // ---- Brand Preset API ----
+  app.get("/api/brands", (_req, res) => {
+    res.json({ brands: listBrands() });
+  });
+
+  app.get("/api/brands/:name/preset", (req, res) => {
+    const preset = loadBrandPreset(req.params.name);
+    if (!preset) { res.status(404).json({ error: "Brand preset not found" }); return; }
+    res.json({ preset });
+  });
+
+  app.put("/api/brands/:name/preset", (req, res) => {
+    const { preset } = req.body;
+    if (!preset || !preset.name || !preset.colors || !preset.fonts) {
+      res.status(400).json({ error: "Invalid preset: name, colors, and fonts required" });
+      return;
+    }
+    saveBrandPreset(req.params.name, preset);
+    res.json({ ok: true });
+  });
+
+  // ---- Template Set API ----
+  app.get("/api/template-sets", (_req, res) => {
+    res.json({ sets: listTemplateSets() });
+  });
+
+  app.get("/api/template-sets/:id", (req, res) => {
+    const set = loadTemplateSet(req.params.id);
+    if (!set) { res.status(404).json({ error: "Template set not found" }); return; }
+    res.json({ set });
+  });
+
+  app.put("/api/template-sets/:id", (req, res) => {
+    const { set } = req.body;
+    if (!set || !set.id || !set.name || !Array.isArray(set.formatIds)) {
+      res.status(400).json({ error: "Invalid template set: id, name, and formatIds required" });
+      return;
+    }
+    saveTemplateSet(set);
+    res.json({ ok: true });
+  });
+
+  app.delete("/api/template-sets/:id", (req, res) => {
+    deleteTemplateSet(req.params.id);
+    res.json({ ok: true });
   });
 
   return app;
