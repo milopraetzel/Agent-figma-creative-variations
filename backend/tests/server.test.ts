@@ -108,3 +108,28 @@ describe("POST /api/reflow with printMeta", () => {
     );
   });
 });
+
+describe("POST /api/reflow with memoryContext", () => {
+  beforeEach(() => { mockGenerateReflow.mockReset(); });
+
+  it("passes merged markdown context to generateReflow", async () => {
+    mockGenerateReflow.mockResolvedValue({
+      targetWidth: 1080, targetHeight: 1080,
+      elements: [{ id: "text-1", x: 40, y: 200, width: 1000, height: 80, rotation: 0, visible: true }],
+    });
+
+    const request = {
+      ...sampleRequest,
+      copyVariations: {},
+      memoryContext: { brandName: "acme", templateId: "instagram-post", projectName: "q1" },
+    };
+
+    const app = createApp();
+    const res = await postJSON(app, "/api/reflow", request);
+
+    expect(res.status).toBe(200);
+    const callArgs = mockGenerateReflow.mock.calls[0];
+    expect(callArgs[3]).toBeDefined();
+    expect(typeof callArgs[3]).toBe("string");
+  });
+});

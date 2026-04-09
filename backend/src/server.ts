@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { generateReflow } from "./reflow";
+import { mergeContext } from "./context-merger";
 import type { ReflowRequest, ReflowResponse } from "./types";
 
 export function createApp(): express.Application {
@@ -18,11 +19,15 @@ export function createApp(): express.Application {
 
     const { frame, targetWidth, targetHeight, copyVariations } = body as ReflowRequest;
 
+    const markdownContext = body.memoryContext
+      ? mergeContext(body.memoryContext)
+      : undefined;
+
     try {
       const variationEntries = Object.entries(copyVariations ?? {});
 
       if (variationEntries.length === 0) {
-        const reflow = await generateReflow(frame, targetWidth, targetHeight, undefined, body.printMeta);
+        const reflow = await generateReflow(frame, targetWidth, targetHeight, markdownContext, body.printMeta);
         const response: ReflowResponse = {
           variations: [{ label: "Original", textOverrides: {}, reflow }],
         };
@@ -31,7 +36,7 @@ export function createApp(): express.Application {
       }
 
       const permutations = generatePermutations(variationEntries);
-      const reflow = await generateReflow(frame, targetWidth, targetHeight, undefined, body.printMeta);
+      const reflow = await generateReflow(frame, targetWidth, targetHeight, markdownContext, body.printMeta);
 
       const response: ReflowResponse = {
         variations: permutations.map((perm) => ({

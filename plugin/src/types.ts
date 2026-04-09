@@ -107,7 +107,7 @@ export type PluginMessage =
   | { type: "ERROR"; message: string };
 
 export type UIMessage =
-  | { type: "GENERATE"; formats: Array<{ id: string; name: string; widthPx: number; heightPx: number; printMeta?: PrintMeta }>; copyVariations: Record<string, string[]> }
+  | { type: "GENERATE"; formats: Array<{ id: string; name: string; widthPx: number; heightPx: number; printMeta?: PrintMeta }>; copyVariations: Record<string, string[]>; memoryContext?: MemoryContext }
   | { type: "CANCEL" };
 
 export interface PrintMeta {
@@ -119,6 +119,12 @@ export interface PrintMeta {
   safeZone?: number;
 }
 
+export interface MemoryContext {
+  brandName?: string;
+  templateId?: string;
+  projectName?: string;
+}
+
 // ---- API Request/Response ----
 
 export interface ReflowRequest {
@@ -127,6 +133,7 @@ export interface ReflowRequest {
   targetHeight: number;
   copyVariations: Record<string, string[]>;
   printMeta?: PrintMeta;
+  memoryContext?: MemoryContext;
 }
 
 export interface ReflowResponse {
